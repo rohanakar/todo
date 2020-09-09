@@ -1,0 +1,9 @@
+CACHE MANIFEST
+# v1.0 : 10-08-2014
+ 
+CACHE:
+# pages
+index.html
+
+FALLBACK:
+index.html
