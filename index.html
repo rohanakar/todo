@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" manifest="example.appcache">
+<html lang="en">
 
 <head>
+    <link rel="canonical" href="https://rohanakar.github.io/todo/" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToDoList</title>
@@ -63,6 +64,14 @@
             flex-direction: column;
         }
     </style>
+    <script>
+        // register ServiceWorker, remember to use absolute path!
+        if (navigator.serviceWorker) {
+          navigator.serviceWorker.register('/todo/sw.js', {scope: '/todo/'})
+        }
+        
+        // --- Application code here ---
+        </script>
     <div class="main"><button class="add" onClick="addInput('')">Add</button>
 
     </div>
