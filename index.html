@@ -6,75 +6,513 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToDoList</title>
+    <script data-search-pseudo-elements src="https://use.fontawesome.com/releases/v5.13.0/js/all.js"></script>
 </head>
 
 <body onload="
 
     save = () => {
             let content = document.getElementById('content');
-            let elements = content.getElementsByTagName('input');
+            window.localStorage.clear();
+            let elements = content.getElementsByClassName('label');
             for (let i = 0; i < elements.length; i++) {
-                window.localStorage.setItem('todo-' + i, elements[i].value);
+                window.localStorage.setItem('todo-' + i, elements[i].innerText);
+                let selectCircle = elements[i].parentElement.getElementsByClassName('circle')[0];
+                window.localStorage.setItem('active-' + i, selectCircle.className.indexOf('green'));
                
             }
+
             window.localStorage.setItem('todoLength', elements.length);
 
         }
 
-     addInput = (value) =>{
-            
-            let element = document.createElement('div');
-            let input = document.createElement('input');
-            input.value= value;
-            
-            input.oninput=(e)=>{
-                save();
-            }
-            let button = document.createElement('button');
-            button.innerText = 'delete';
-            button.onclick = (e)=>{
-                e.target.parentElement.remove();
-                save();
-               
-            }
-
-            element.appendChild(input);
-            element.appendChild(button);
-
-            let content = document.getElementById('content');
-            content.appendChild(element);
-            save();
-            
-        }
         
         let size = window.localStorage.getItem('todoLength');
         let content = document.createElement('div');
         content.id = 'content';
-        document.body.appendChild(content);
-        for(let i=0;i<size;i++){
-            addInput(window.localStorage.getItem('todo-' + i));
+        
+        let outerBox = createElement('','custom-input-text list end');
+        let itemsLeft = createElement('0 items left','items-left');
+        let controlButtonGroups = createElement('','button-group');
+        let buttonAll = createElement('All','button active');
+        let buttonActive = createElement('Active','button');
+        let buttonCompleted = createElement('Completed','button');
+
+        buttonActive.onclick = (e) => {
+            buttonActive.classList.add('active');
+            buttonAll.classList.remove('active');
+            buttonCompleted.classList.remove('active');
+            for(let ele of document.getElementsByClassName('circle')){
+                if(ele.classList.contains('green')){
+                    ele.parentElement.classList.add('hiden');
+                }
+                if(!ele.classList.contains('green')){
+                    ele.parentElement.classList.remove('hiden');
+                }
+            }save();
         }
-   
+
+        buttonAll.onclick = (e) => {
+            buttonActive.classList.remove('active');
+            buttonAll.classList.add('active');
+            buttonCompleted.classList.remove('active');
+            for(let ele of document.getElementsByClassName('circle')){
+                if(ele.classList.contains('circle')){
+                    ele.parentElement.classList.remove('hiden');
+                }
+            }
+            save();
+        }
+
+        buttonCompleted.onclick = (e) => {
+            buttonActive.classList.remove('active');
+            buttonAll.classList.remove('active');
+            buttonCompleted.classList.add('active');
+            for(let ele of document.getElementsByClassName('circle')){
+                if(!ele.classList.contains('green')){
+                    ele.parentElement.classList.add('hiden');
+                }
+                if(ele.classList.contains('green')){
+                    ele.parentElement.classList.remove('hiden');
+                }
+            }
+            save();
+        }
+
+        controlButtonGroups.append(buttonAll);
+        controlButtonGroups.append(buttonActive);
+        controlButtonGroups.append(buttonCompleted);
+        let buttonClearCompleted = createElement('Clear completed', 'items-right');
+        buttonClearCompleted.onclick = (e) => {
+            let eles = document.getElementsByClassName('green');
+            for (let i = eles.length - 1; i >= 0; i--) {
+                eles[i].parentNode.remove(eles[i]);
+            }
+            save();
+        }
+        outerBox.append(itemsLeft);   
+     
+        outerBox.append(controlButtonGroups);   
+        outerBox.append(buttonClearCompleted);   
+        content.innerText='';
+        content.append(outerBox);
+        document.body.appendChild(content);
+        for(let i=size-1;i>=0;i--){
+            if(window.localStorage.getItem('active-' + i) != -1)
+                counter(-1);
+            addInput(window.localStorage.getItem('todo-' + i),8,window.localStorage.getItem('active-' + i));
+        }
+        
 
 ">
     <style>
+        .end {
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            color: #767373;
+        }
+        
+        .button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 0.6em;
+            height: 0.9em;
+            line-height: 0.8em;
+            transition: none;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            padding: 10px;
+            font-size: 0.6em;
+            height: 0.9em;
+            line-height: 0.8em;
+            border: 1px solid #dfd4d4;
+            border-radius: 5px;
+            transition: none;
+        }
+        
+        .button.active {
+            border: 1px solid red;
+            border-radius: 3px;
+        }
+        
+        .button.active:hover {
+            border: 1px solid red;
+            border-radius: 3px;
+        }
+        
+        .items-left {
+            flex-wrap: wrap;
+            width: 20%;
+            max-width: 10vw;
+            padding: 10px;
+            font-size: 0.8em;
+            text-align: center;
+            justify-content: center;
+        }
+        
+        .items-right {
+            width: 20%;
+            max-width: 10vw;
+            padding: 10px;
+            font-size: 0.8em;
+            text-align: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .items-right:hover {
+            text-decoration: underline;
+        }
+        
+        .button-group {
+            justify-content: center;
+            width: 50%;
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 30vw;
+            align-self: center;
+        }
+        
+        .green {
+            background-color: green;
+        }
+        
+        .circle {
+            border: 2px solid #e6e6e6;
+            height: 25px;
+            width: 25px;
+            border-radius: 50%;
+            margin-top: auto;
+            margin-bottom: auto;
+            margin-left: 10px;
+        }
+        
+        .underline {
+            text-decoration: line-through;
+            color: grey;
+            pointer-events: none;
+        }
+        
+        .cross {
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            content: "\f00d";
+        }
+        
+        body {
+            margin: 0;
+            font-family: montserrat;
+        }
+        
         #content {
             display: flex;
             justify-content: center;
             flex-direction: column;
         }
+        
+        .custom-input-text {
+            position: relative;
+            width: 100%;
+            margin: auto;
+        }
+        
+        .custom-input {
+            width: 50vw;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            border: 1px solid grey;
+            margin: auto;
+            box-shadow: 5px 0px #888888;
+            padding-right: 2px;
+        }
+        
+        .list {
+            position: relative;
+            border-bottom: 1px solid grey;
+            border-left: 1px solid grey;
+            box-shadow: 5px 0px #888888;
+            margin: auto;
+            width: 50vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+        }
+        
+        .icon::before {
+            display: none;
+            font-style: normal;
+            font-variant: normal;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* .list:hover::after {
+            position: absolute;
+            content: "\f00d";
+            font-family: "Font Awesome 5 Free";
+            right: 2%;
+            bottom: 5%;
+            opacity: 1;
+            font-weight: 900;
+            transition: all 0.2s;
+        } */
+        
+        .icon {
+            display: grid;
+            place-items: center;
+            padding: 5px;
+            cursor: pointer
+        }
+        
+        label {
+            display: inline;
+            white-space: nowrap;
+            position: absolute;
+            overflow: hidden;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            padding-left: 1vw;
+            padding-right: 1vw;
+            pointer-events: none;
+            color: grey;
+            font-style: italic;
+            font-size: 1.2em;
+            border: 1px;
+        }
+        
+        input,
+        input:focus {
+            padding: 10px;
+            padding-left: 1vw;
+            /* padding-top: 0px;
+            padding-bottom: 0px;
+            margin-top: 10px;
+            margin-bottom: 10px; */
+            border-radius: 10px;
+            font-family: montserrat;
+            border: none;
+            width: 45vw;
+            height: 100%;
+            outline: none;
+            font-family: montserrat;
+            font-size: 1.2em;
+        }
+        
+        .hide {
+            display: none;
+        }
+        
+        .label {
+            border: none;
+            white-space: normal;
+            height: auto;
+            width: 40vw;
+            padding: 10px;
+            max-width: 40vw;
+        }
+        
+        div {
+            margin: 0;
+            padding: 0;
+            transition: all 0.2s;
+        }
+        
+        div.hide {
+            display: block;
+            bottom: 5px;
+            position: absolute;
+            opacity: 0;
+            right: 0px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        div.show {
+            display: block;
+            bottom: 5px;
+            position: absolute;
+            opacity: 1;
+            right: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        div.show:hover {
+            transform: scale(1.5, 1.5);
+        }
+        
+        .hiden {
+            display: none;
+            transition: none;
+        }
     </style>
     <script>
         // register ServiceWorker, remember to use absolute path!
-        if (navigator.serviceWorker) {
-          navigator.serviceWorker.register('/todo/sw.js', {scope: '/todo/'})
-        }
-        
-        // --- Application code here ---
-        </script>
-    <div class="main"><button class="add" onClick="addInput('')">Add</button>
+        // if (navigator.serviceWorker) {
+        //     navigator.serviceWorker.register('/todo/sw.js', {
+        //         scope: '/todo/'
+        //     })
+        // }
 
+        // --- Application code here ---
+        let counter = () => {
+            let itemsLeft = 0;
+            return (args) => {
+                itemsLeft += args;
+                return itemsLeft
+            };
+        }
+        counter = counter();
+        createElement = (value, classLists, props) => {
+            let element = document.createElement('div');
+            classLists.split(" ").forEach(classs => {
+                if (classs.length > 0)
+                    element.classList.add(classs);
+            });
+
+            element.textContent = value;
+            if (props)
+                Object.keys(props).forEach(key => element[key] = props[key])
+            return element;
+        }
+
+        hideLabel = (e) => {
+
+            let par = e.parentElement;
+            let label = par.getElementsByTagName('label')[0];
+            if (e.value.length != 0) {
+                label.classList.add('hide')
+            }
+            if (e.value.length == 0) {
+                label.classList.remove('hide')
+            }
+
+        }
+
+
+
+        createIcon = (classLists) => {
+            let element = document.createElement('i');
+            classLists.split(" ").forEach(classs => {
+                element.classList.add(classs);
+            });
+            return element;
+        }
+
+        function addClassNameListener(elem) {
+            var lastClassName = elem.className;
+            window.setInterval(function() {
+                var className = elem.className;
+                if (className !== lastClassName) {
+
+                    if (className.indexOf('green') !== -1)
+                        counter(-1);
+                    else
+                        counter(1);
+                    document.getElementsByClassName('items-left')[0].textContent = counter(0) + ' elements Left.'
+                    save();
+                    lastClassName = className;
+                }
+            }, 10);
+        }
+
+        addInput = (value, firstTime, selectedValue) => {
+
+            let outerBox = createElement('', 'custom-input-text list');
+            let selectCircle = createElement('', selectedValue && selectedValue != -1 ? 'circle green' : 'circle');
+            let inputProps = {
+                'contentEditable': true,
+                'spellcheck': false
+            }
+
+            document.getElementsByClassName('items-left')[0].textContent = counter(1) + ' elements Left.'
+            let input = createElement(value, 'label', inputProps);
+            if (selectedValue && selectedValue != -1)
+                input.classList.toggle('underline')
+            selectCircle.onclick = (e) => {
+                selectCircle.classList.toggle('green');
+                input.classList.toggle('underline')
+            }
+            addClassNameListener(selectCircle);
+
+            outerBox.appendChild(selectCircle);
+            outerBox.appendChild(input);
+
+            let iconContainer = createElement('', 'hide');
+            let icon = createIcon('fas fa-times');
+            iconContainer.appendChild(icon);
+            outerBox.onmouseover = (e) => {
+                iconContainer.classList.remove('hide');
+                iconContainer.classList.add('show');
+
+            }
+            outerBox.onmouseleave = (e) => {
+                iconContainer.classList.add('hide');
+                iconContainer.classList.remove('show');
+            }
+
+            iconContainer.onclick = (e) => {
+                let ele = e.target.parentElement.parentElement;
+                if (!ele.classList.contains('list'))
+                    ele = ele.parentElement;
+                let el = ele.getElementsByClassName('circle')[0];
+                if (el.className.indexOf('green') === -1) {
+                    document.getElementsByClassName('items-left')[0].textContent = counter(-1) + ' elements Left.';
+                }
+                ele.parentNode.removeChild(ele);
+                save();
+            }
+            outerBox.appendChild(iconContainer);
+            input.oninput = (e) => {
+                save();
+            }
+            let content = document.getElementById('content');
+            content.insertBefore(outerBox, content.childNodes[0]);
+            if (!firstTime)
+                save();
+
+        }
+        completeAll = () => {
+            for (let ele of document.getElementsByClassName('circle')) {
+                ele.classList.add('green');
+                ele.parentElement.getElementsByClassName('label')[0].classList.add('underline');
+            }
+        }
+    </script>
+    <div class="main">
+
+        <h1>
+            To do list
+        </h1>
+        <div class="custom-input">
+            <div class="icon" onclick="completeAll()">
+                <img src="chevron-down.svg" alt="icon">
+            </div>
+            <div class="custom-input-text">
+
+                <label>
+                    What needs to be done ?
+                </label>
+                <input type="text" oninput="hideLabel(this)">
+            </div>
+        </div>
     </div>
+    <script>
+        for (element of document.getElementsByTagName("input")) {
+            element.addEventListener("keyup", function(event) {
+                if (event.key === "Enter") {
+                    addInput(element.value);
+                    element.value = "";
+                    hideLabel(element);
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
