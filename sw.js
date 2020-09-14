@@ -5,7 +5,7 @@ var URLS = [                            // Add URL you want to cache in this lis
   '/todo/',                     // If you have separate JS/CSS files,
   '/todo/index.html'            // add path to those files here
 ]
-
+let x = 1;
 // Respond with cached resources
 self.addEventListener('fetch', function (e) {
   console.log('fetch request : ' + e.request.url)
